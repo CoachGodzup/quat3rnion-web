@@ -1,0 +1,21 @@
+<level size="3">
+  <options gravity="no" />
+
+  <!-- stanze utili -->
+  <room pos="0,1,1" >
+    <face pos="forward" type="S1"/>
+  </room>
+  <room pos="1,1,1" >
+    <face pos="left" type="S1"/>
+    <face pos="right" type="S2"/>
+  </room>
+  <room pos="2,1,1" >
+    <face pos="left" type="S2"/>    
+  </room>
+  
+  <pg neededKeys="1" color="orange">
+      <start pos="0,1,1" />
+      <key pos="2,1,1" />
+      <exit pos="1,1,1" />
+    </pg>
+  </level>

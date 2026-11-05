@@ -1,0 +1,25 @@
+<level size="2">
+  <options gravity="no" />
+	<room pos="0,1,0">
+	</room>
+	<room pos="1,1,0">
+	</room>
+	<room pos="1,1,1">
+	</room>
+	<room pos="0,1,1">
+	</room>
+	<room pos="0,0,1">
+	</room>
+	<room pos="1,0,1">
+	</room>
+	<room pos="1,0,0">
+	</room>
+	<room pos="0,0,0">
+	</room>
+	
+	<pg neededKeys="1" color="red">
+		<start pos="0,1,0" />
+		<key pos="1,0,1" />
+		<exit pos="0,0,0" />
+	</pg>
+</level>

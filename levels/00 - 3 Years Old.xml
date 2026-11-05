@@ -1,0 +1,40 @@
+<level size="2">
+  <options gravity="down" />
+	<room pos="0,1,0">
+		<face pos="right" type="S4" />
+	</room>
+	<room pos="1,1,0">
+		<face pos="left" type="S4" />
+		<face pos="forward" type="S5" />
+	</room>
+	<room pos="1,1,1">
+		<face pos="back" type="S5" />
+		<face pos="left" type="S3" />
+	</room>
+	<room pos="0,1,1">
+		<face pos="right" type="S3" />
+		<face pos="down" type="S4" />
+	</room>
+	<room pos="0,0,1">
+		<face pos="up" type="S4" />
+		<face pos="right" type="S3" />
+	</room>
+	<room pos="1,0,1">
+		<face pos="left" type="S3" />
+		<face pos="back" type="S5" />
+	</room>
+	<room pos="1,0,0">
+		<face pos="forward" type="S5" />
+		<face pos="left" type="S4" />
+	</room>
+	<room pos="0,0,0">
+		<face pos="right" type="S4" />
+	</room>
+	
+	<pg neededKeys="2" color="blue">
+		<start pos="0,1,0" />
+		<key pos="1,1,1" />
+		<key pos="1,0,1" />
+		<exit pos="0,0,0" />
+	</pg>
+</level>

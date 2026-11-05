@@ -1,0 +1,31 @@
+<level size="3">
+	<room pos="1,1,1">
+		<face pos="up" type="S1" />
+	</room>
+	<room pos="0,1,1">
+		<face pos="right" type="S1" />
+	</room>
+	<room pos="1,0,1">
+		<face pos="up" type="S1" />
+	</room>
+	<room pos="1,1,0">
+		<face pos="forward" type="S1" />
+	</room>
+	<room pos="2,1,1">
+		<face pos="left" type="S1" />
+	</room>
+	<room pos="1,2,1">
+		<face pos="up" type="S1" />
+	</room>
+	<room pos="1,1,2">
+		<face pos="back" type="S1" />
+	</room>
+	<pg color="red" neededKeys="4">
+		<start pos="1,2,1" />
+		<key pos="0,1,1" />
+		<key pos="1,1,0" />
+		<key pos="2,1,1" />
+		<key pos="1,1,2" />
+		<exit pos="1,0,1" />
+	</pg>
+</level>

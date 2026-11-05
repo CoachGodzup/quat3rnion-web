@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" size="4">
+  
+  <room pos="0,1,1">
+    <face pos="left" type="S1" />
+    <face pos="up" type="S3" />
+    <face pos="forward" type="S5" />
+  </room>
+  <room pos="0,1,2">
+    <face pos="right" type="S5" />
+    <face pos="back" type="S4" />
+  </room>
+ 
+  <room pos="0,2,1">
+    <face pos="down" type="S2" />
+    <face pos="forward" type="S1" />
+  </room>
+  
+  <room pos="1,0,1">
+    <face pos="right" type="S4" />
+    <face pos="down" type="T1" />
+    <face pos="forward" type="S2" />
+  </room>
+  
+  <room pos="1,1,1">
+    <face pos="right" type="S2" />
+    <face pos="forward" type="S5" />
+  </room>
+  <room pos="1,1,2">
+    <face pos="right" type="S5" />
+    <face pos="left" type="S4" />
+    <face pos="up" type="S3" />
+    <face pos="back" type="S2" />
+  </room>
+  
+  <room pos="1,2,0">
+    <face pos="right" type="S3" />
+    <face pos="down" type="S1" />
+    <face pos="forward" type="S2" />
+  </room>
+  <room pos="1,2,1">
+    <face pos="right" type="S4" />
+    <face pos="left" type="S5" />
+    <face pos="up" type="S3" />
+    <face pos="forward" type="S1" />
+  </room>
+  <room pos="1,2,2">
+    <face pos="right" type="S3" />
+    <face pos="down" type="S5" />
+    <face pos="back" type="S2" />
+  </room>
+  <room pos="1,2,3">
+    <face pos="right" type="S2" />
+    <face pos="forward" type="S4" />
+  </room>
+
+  <room pos="1,3,1">
+    <face pos="down" type="S4" />
+    <face pos="forward" type="S1" />
+  </room>
+  <room pos="1,3,2">
+    <face pos="right" type="S1" />
+    <face pos="back" type="S3" />
+  </room>
+
+  <room pos="2,0,2">
+    <face pos="right" type="T1" />
+    <face pos="left" type="S4" />
+    <face pos="back" type="S2" />
+  </room>
+ 
+  <room pos="2,1,0">
+    <face pos="left" type="S2" />
+    <face pos="up" type="S3" />
+  </room>
+  <room pos="2,1,1">
+    <face pos="right" type="S1" />
+    <face pos="left" type="T1" />
+    <face pos="up" type="S4" />
+    <face pos="forward" type="S2" />
+  </room>
+  <room pos="2,1,2">
+    <face pos="left" type="S3" />
+    <face pos="forward" type="S2" />
+    <face pos="back" type="S4" />
+  </room>
+  <room pos="2,1,3">
+    <face pos="left" type="S5" />
+    <face pos="up" type="S1" />
+  </room>
+  <room pos="2,2,0">
+    <face pos="left" type="S1" />
+    <face pos="down" type="S4" />
+    <face pos="forward" type="S2" />
+  </room>
+  <room pos="2,2,1">
+    <face pos="right" type="S2" />
+    <face pos="left" type="S3" />
+    <face pos="forward" type="S1" />
+  </room>
+  <room pos="2,2,2">
+    <face pos="left" type="S4" />
+    <face pos="down" type="S5" />
+  </room>
+  <room pos="2,2,3">
+    <face pos="left" type="S3" />
+    <face pos="down" type="S4" />
+    <face pos="forward" type="S4" />
+  </room>
+ 
+  <room pos="2,3,2">
+    <face pos="left" type="S5" />
+    <face pos="up" type="S3" />
+    <face pos="down" type="S1" />
+    <face pos="back" type="S2" />
+  </room>
+  
+  <room pos="3,2,1">
+    <face pos="left" type="S3" />
+    <face pos="down" type="S4" />
+    <face pos="forward" type="S5" />
+  </room>
+  <room pos="3,2,2">
+    <face pos="down" type="S3" />
+    <face pos="back" type="T1" />
+  </room>
+ 
+  <pg color="red" neededKeys="1">
+    <start pos="2,2,3" />
+    <key pos="2,0,2" />
+    <exit pos="1,3,2" />
+  </pg>
+  <pg color="blue" neededKeys="1">
+    <start pos="2,1,0" />
+    <key pos="2,2,0" />
+    <exit pos="0,2,1" />
+  </pg>
+  <pg color="pink" neededKeys="1">
+    <start pos="2,1,3" />
+    <key pos="2,3,2" />
+    <exit pos="1,3,1" />
+  </pg>
+  <pg color="orange" neededKeys="1">
+    <start pos="0,1,2" />
+    <key pos="1,2,3" />
+    <exit pos="0,1,1" />
+  </pg>
+  <options gravity="down" rotColAxis="y" rotColNeededPgs="1" rotColSync="False" rotFaceAxis="xyz" rotFaceNeededPgs="1" rotFaceSync="False" />
+</level>

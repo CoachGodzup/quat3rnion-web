@@ -40,9 +40,16 @@ let animating = false;
 const bursts = [];
 let levelWon = false;
 let lastTime = performance.now();
+let stars = null;
 let pendingRot = null;
 const AXIS_IDX = { x: 0, y: 1, z: 2 };
 const AXIS_VEC = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
+// +1 = rotazione antioraria attorno all'asse + (regola mano destra).
+// Il segno dipende dall'asse: y e' invertito rispetto a x/z.
+function rotationSign(axis, verse) {
+  const s = axis === "y" ? 1 : -1;
+  return s * (verse ? 1 : -1);
+}
 
 const texCache = new Map();
 const zAxis = new THREE.Vector3(0, 0, 1);
@@ -73,6 +80,7 @@ async function init() {
 
     board = new THREE.Group();
     scene.add(board);
+    makeStars();
 
     raycaster = new THREE.Raycaster();
     pointer = new THREE.Vector2();
@@ -157,9 +165,9 @@ async function init() {
         const p = kernel.Pg(0);
         requestRotation("face", "z", p.position[2], 0, 0, true);
         res.facePreview = !!(pendingRot && pendingRot.indicator);
-        requestRotation("column", "x", p.position[0], p.position[1], p.position[2], false);
+        requestRotation("column", "y", p.position[0], p.position[1], p.position[2], false);
         res.spiralPreview = !!(pendingRot && pendingRot.kind === "column" && pendingRot.indicator);
-        requestRotation("column", "x", p.position[0], p.position[1], p.position[2], false);
+        requestRotation("column", "y", p.position[0], p.position[1], p.position[2], false);
         res.executed = animating;
       } catch (e) { res.error = String(e && e.stack || e); }
       body.dataset.previewtest = JSON.stringify(res);
@@ -436,6 +444,8 @@ function spawnBurst(origin, baseColor, count, opts = {}) {
   const life = opts.life ?? 2.6;
   const size = opts.size ?? 0.18;
   const gravity = opts.gravity ?? 4.5;
+  const gdir = kernel ? kernel.gravityDirection : "down";
+  const gvec = gdir === "up" ? [0, 1, 0] : gdir === "no" ? [0, 0, 0] : [0, -1, 0];
   const tintColor = new THREE.Color(opts.tint ?? 0xffe066);
 
   const positions = new Float32Array(count * 3);
@@ -469,7 +479,7 @@ function spawnBurst(origin, baseColor, count, opts = {}) {
 
   const points = new THREE.Points(geom, mat);
   scene.add(points);
-  bursts.push({ points, vels, life: 0, maxLife: life, baseSize: size, gravity });
+  bursts.push({ points, vels, life: 0, maxLife: life, baseSize: size, gravity, gvec });
 }
 
 function celebrate() {
@@ -497,7 +507,9 @@ function updateBursts(dt) {
     const pos = b.points.geometry.attributes.position;
     for (let i = 0; i < b.vels.length; i++) {
       const v = b.vels[i];
-      v.y -= b.gravity * dt;    // gravità
+      v.x += b.gvec[0] * b.gravity * dt;
+      v.y += b.gvec[1] * b.gravity * dt;
+      v.z += b.gvec[2] * b.gravity * dt;
       v.multiplyScalar(0.985);  // attrito
       pos.array[i * 3] += v.x * dt;
       pos.array[i * 3 + 1] += v.y * dt;
@@ -516,6 +528,43 @@ function clearBursts() {
     b.points.material.dispose();
   }
   bursts.length = 0;
+}
+
+// -------------------------------------------------- sfondo: stelle e gravità
+
+function makeStars() {
+  const N = 500, R = 32;
+  const pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    pos[i * 3] = (Math.random() * 2 - 1) * R;
+    pos[i * 3 + 1] = (Math.random() * 2 - 1) * R;
+    pos[i * 3 + 2] = (Math.random() * 2 - 1) * R;
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color: 0x9fb8ff, size: 0.14, transparent: true, opacity: 0.85, depthWrite: false, toneMapped: false });
+  stars = new THREE.Points(geom, mat);
+  scene.add(stars);
+}
+
+// Le stelle scorrono in direzione OPPOSTA alla gravità (se cadiamo giù, salgono),
+// così si percepisce "in che verso cade" il mondo.
+function updateStars(dt) {
+  if (!stars) return;
+  const gd = kernel ? kernel.gravityDirection : "no";
+  let vy = 0;
+  const speed = 2.2;
+  if (gd === "down") vy = speed;
+  else if (gd === "up") vy = -speed;
+  if (vy === 0) return;
+  const p = stars.geometry.attributes.position;
+  const R = 32;
+  for (let i = 0; i < p.count; i++) {
+    let y = p.array[i * 3 + 1] + vy * dt;
+    if (y > R) y -= 2 * R; else if (y < -R) y += 2 * R;
+    p.array[i * 3 + 1] = y;
+  }
+  p.needsUpdate = true;
 }
 
 // ---------------------------------------------------------- switch livelli
@@ -551,6 +600,7 @@ function clearPending() {
 
 function requestRotation(kind, axis, a, b, c, verse) {
   if (animating) return;
+  if (kind === "column" && axis !== "y") return; // solo colonne verticali (asse Y)
   const sig = `${kind}|${axis}|${a}|${b}|${c}|${verse}`;
   if (pendingRot && pendingRot.sig === sig) {
     clearPending();
@@ -582,11 +632,11 @@ function showFaceArrow(axis, who, verse) {
   ring.renderOrder = 999;
   g.add(ring);
 
-  const sign = verse ? -1 : 1; // verse=true = orario (-90°)
+  const rot = rotationSign(axis, verse); // +1 = antiorario attorno ad +axis
   const cone = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.34, 14), mat);
   cone.renderOrder = 999;
   cone.position.set(0, R, 0);
-  const tangent = new THREE.Vector3(-sign, 0, 0); // in alto: ccw => -X
+  const tangent = new THREE.Vector3(-rot, 0, 0); // in alto: ccw => -X
   cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tangent);
   g.add(cone);
 
@@ -599,13 +649,13 @@ function showColumnSpiral(axis, x, y, z, verse) {
   const L = kernel.size * CELL;
   const r = CELL * 0.28;
   const turns = 2.5;
-  const sign = verse ? -1 : 1;
+  const rot = rotationSign(axis, verse);
   const pts = [];
   const N = 120;
   for (let i = 0; i <= N; i++) {
     const t = i / N;
     const s = (t - 0.5) * L;
-    const th = sign * t * turns * Math.PI * 2;
+    const th = rot * t * turns * Math.PI * 2;
     let px, py, pz;
     if (axis === "x") { px = s; py = base.y + r * Math.cos(th); pz = base.z + r * Math.sin(th); }
     else if (axis === "y") { px = base.x + r * Math.cos(th); py = s; pz = base.z + r * Math.sin(th); }
@@ -695,7 +745,7 @@ function performRotateFace(axis, who, verse) {
   decorGroup.visible = false;
   kernel.rotateFace(axis, who, verse);
 
-  const angle = (verse ? -1 : 1) * (Math.PI / 2);
+  const angle = rotationSign(axis, verse) * (Math.PI / 2);
   tween(280, (e) => { pivot.rotation[axis] = angle * e; }, () => {
     disposeTree(pivot);
     board.remove(pivot);
@@ -717,7 +767,7 @@ function performRotateColumn(axis, x, y, z, verse) {
   decorGroup.visible = false;
   kernel.rotateColumn(axis, x, y, z, verse);
 
-  const angle = (verse ? -1 : 1) * (Math.PI / 2);
+  const angle = rotationSign(axis, verse) * (Math.PI / 2);
   tween(280, (e) => { for (const g of groups) g.rotation[axis] = angle * e; }, () => build());
 }
 
@@ -778,12 +828,8 @@ function onKey(e) {
     case "4": requestRotation("face", "y", py, 0, 0, true); break;
     case "5": requestRotation("face", "z", pz, 0, 0, false); break;
     case "6": requestRotation("face", "z", pz, 0, 0, true); break;
-    case "7": requestRotation("column", "x", px, py, pz, false); break;
-    case "8": requestRotation("column", "x", px, py, pz, true); break;
     case "9": requestRotation("column", "y", px, py, pz, false); break;
     case "0": requestRotation("column", "y", px, py, pz, true); break;
-    case "-": requestRotation("column", "z", px, py, pz, false); break;
-    case "=": requestRotation("column", "z", px, py, pz, true); break;
     case "[": switchLevel(-1); break;
     case "]": switchLevel(1); break;
   }
@@ -820,6 +866,7 @@ function loop(now) {
   lastTime = now;
   stepTween(now);
   updateBursts(dt);
+  updateStars(dt);
   controls.update();
   renderer.render(scene, camera);
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { Kernel } from "./logic.js";
+import { Kernel, rotationSign } from "./logic.js";
 
 const body = document.body;
 const hudInfo = document.getElementById("info");
@@ -41,15 +41,11 @@ const bursts = [];
 let levelWon = false;
 let lastTime = performance.now();
 let stars = null;
+let portals = [];
+let portalActive = [];
 let pendingRot = null;
 const AXIS_IDX = { x: 0, y: 1, z: 2 };
 const AXIS_VEC = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
-// +1 = rotazione antioraria attorno all'asse + (regola mano destra).
-// Il segno dipende dall'asse: y e' invertito rispetto a x/z.
-function rotationSign(axis, verse) {
-  const s = axis === "y" ? 1 : -1;
-  return s * (verse ? 1 : -1);
-}
 
 const texCache = new Map();
 const zAxis = new THREE.Vector3(0, 0, 1);
@@ -173,6 +169,18 @@ async function init() {
       body.dataset.previewtest = JSON.stringify(res);
     }
 
+    if (location.search.includes("portaltest") && kernel && kernel.PgSize() > 0) {
+      const res = { portals: 0, bursts: 0, error: null };
+      try {
+        const p = kernel.Pg(0);
+        p.keys = p.neededKeys;
+        build();
+        res.portals = portals.length;
+        res.bursts = bursts.length;
+      } catch (e) { res.error = String((e && e.stack) || e); }
+      body.dataset.portaltest = JSON.stringify(res);
+    }
+
     requestAnimationFrame(loop);
     body.dataset.ready = "1";
   } catch (e) {
@@ -196,6 +204,7 @@ async function loadFromPath(path) {
   levelWon = false;
   clearBursts();
   clearPending();
+  portalActive = [];
   const m = manifest.find((l) => l.path === path);
   levelPath = path;
   levelLabel = m ? m.name : path.replace(/\.xml$/, "");
@@ -261,6 +270,7 @@ function clearBoard() {
   roomObjects = [];
   roomGroups = new Map();
   playerGroups = [];
+  portals = [];
 }
 
 function cellPos(x, y, z) {
@@ -277,6 +287,25 @@ function beam(a, b, color) {
   m.position.copy(a).addScaledVector(d, 0.5);
   m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize());
   return m;
+}
+
+function makePortal(col) {
+  const g = new THREE.Group();
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(BOX * 0.26, 16, 12),
+    new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85, toneMapped: false }),
+  );
+  g.add(core);
+  for (const ry of [0, Math.PI / 2]) {
+    const hoop = new THREE.Mesh(
+      new THREE.TorusGeometry(BOX * 0.45, BOX * 0.055, 10, 32),
+      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 1.3 }),
+    );
+    hoop.rotation.y = ry;
+    g.add(hoop);
+  }
+  g.add(new THREE.PointLight(col, 1.8, CELL * 3, 2));
+  return g;
 }
 
 function build() {
@@ -359,15 +388,24 @@ function build() {
       decorGroup.add(key);
     }
 
-    // uscita/portale: anch'esso del colore del PG
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(BOX * 0.45, BOX * 0.09, 10, 24),
-      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: i === activePg ? 0.9 : 0.5 }),
-    );
-    ring.position.copy(cellPos(p.exitPosition[0], p.exitPosition[1], p.exitPosition[2]));
-    ring.position.x += spread;
-    ring.rotation.x = Math.PI / 2;
-    decorGroup.add(ring);
+    // portale: appare SOLO quando il PG ha tutte le chiavi, con burst iniziale
+    const portalOn = p.keys >= p.neededKeys && !p.end;
+    if (portalOn) {
+      const exitPos = cellPos(p.exitPosition[0], p.exitPosition[1], p.exitPosition[2]);
+      exitPos.x += spread;
+      const portal = makePortal(col);
+      portal.position.copy(exitPos);
+      decorGroup.add(portal);
+      portals.push(portal);
+      if (!portalActive[i]) {
+        spawnBurst(exitPos, new THREE.Color(col), 120, {
+          speedMin: 0.8, speedMax: 2.8, life: 1.6, size: 0.16, gravity: 1.5, tint: col,
+        });
+      }
+      portalActive[i] = true;
+    } else {
+      portalActive[i] = false;
+    }
   }
 
   for (let i = 0; i < kernel.PgSize(); i++) {
@@ -875,6 +913,7 @@ function loop(now) {
   stepTween(now);
   updateBursts(dt);
   updateStars(dt);
+  for (const g of portals) g.rotation.y += dt * 1.2;
   controls.update();
   renderer.render(scene, camera);
 }

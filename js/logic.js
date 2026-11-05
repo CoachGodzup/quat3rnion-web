@@ -135,6 +135,14 @@ export class Evento {
 
 function parseVec(s) { return s.split(",").map((v) => parseInt(v.trim(), 10)); }
 
+// Direzione (convenzione mano destra) della rotazione attorno all'asse.
+// +1 = antioraria attorno ad +axis. Il segno dipende dall'asse: Y è invertito
+// rispetto a X/Z (verificato contro la permutazione di Stanza.rotate).
+export function rotationSign(axis, verse) {
+  const s = axis === "y" ? 1 : -1;
+  return s * (verse ? 1 : -1);
+}
+
 // ---------------------------------------------------------------- parsing XML
 
 export function parseLevel(xmlString) {

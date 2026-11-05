@@ -343,21 +343,29 @@ function build() {
 
   for (let i = 0; i < kernel.PgSize(); i++) {
     const p = kernel.Pg(i);
+    const col = PG_COLORS[p.color] || 0xffffff;
+    const spread = (i - (kernel.PgSize() - 1) / 2) * (BOX * 0.22);
+
+    // chiavi: colore del PG che le deve prendere
     for (let k = 0; k < p.keyPositions.length; k++) {
       if (p.hasKey[k]) continue;
       const kp = p.keyPositions[k];
       const key = new THREE.Mesh(
         new THREE.SphereGeometry(BOX * 0.3, 16, 12),
-        new THREE.MeshStandardMaterial({ color: 0xffe066, emissive: 0x6b4d00, emissiveIntensity: 0.7 }),
+        new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: i === activePg ? 0.9 : 0.55 }),
       );
       key.position.copy(cellPos(kp[0], kp[1], kp[2]));
+      key.position.x += spread;
       decorGroup.add(key);
     }
+
+    // uscita/portale: anch'esso del colore del PG
     const ring = new THREE.Mesh(
       new THREE.TorusGeometry(BOX * 0.45, BOX * 0.09, 10, 24),
-      new THREE.MeshStandardMaterial({ color: 0x40ff99, emissive: 0x0a6b3a, emissiveIntensity: 0.8 }),
+      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: i === activePg ? 0.9 : 0.5 }),
     );
     ring.position.copy(cellPos(p.exitPosition[0], p.exitPosition[1], p.exitPosition[2]));
+    ring.position.x += spread;
     ring.rotation.x = Math.PI / 2;
     decorGroup.add(ring);
   }

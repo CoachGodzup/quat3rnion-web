@@ -11,18 +11,71 @@
   #hud b { font-size: 15px; }
   #info { margin-top: 2px; }
   #status { margin-top: 6px; font-weight: 700; min-height: 18px; }
-  #panel { position: fixed; top: 10px; right: 12px; z-index: 10; }
-  select { background: #182033; color: #dfe6f0; border: 1px solid #33415c; border-radius: 6px; padding: 5px 8px; font-size: 13px; }
+  :root { --ctl-h: 40px; --ctl-radius: 8px; }
+  #dock { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; flex-direction: column; gap: 8px; width: min(560px, calc(100vw - 16px)); background: rgba(11,14,20,.72); padding: 10px; border-radius: 12px; border: 1px solid #223; backdrop-filter: blur(4px); }
+  #topright { position: fixed; top: 10px; right: 12px; z-index: 20; display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: min(420px, calc(100vw - 24px)); }
+  .topbar { display: flex; gap: 8px; align-items: stretch; }
+  .topbar select { flex: 1 1 auto; min-width: 0; }
+  .topbar button { flex: 0 0 auto; }
+  button, select {
+    box-sizing: border-box; height: var(--ctl-h); min-height: var(--ctl-h);
+    padding: 0 12px; border-radius: var(--ctl-radius);
+    background: #1c2740; color: #dfe6f0; border: 1px solid #33415c;
+    font: inherit; font-size: 13px;
+  }
+  button { cursor: pointer; white-space: nowrap; }
+  button:hover { background: #26365a; }
+  button:active { background: #2f4f86; }
+  select { padding: 0 8px; background: #182033; }
+  #panel .actions { display: flex; gap: 8px; }
+  #panel .actions button { flex: 1 1 0; }
+  #panel .actions kbd { margin-left: 4px; opacity: .75; }
+  #btnEditor { background: #24304a; border-color: #3d4f72; }
+  #btnEditor:hover { background: #2f4066; }
   kbd { background: #1c2740; border: 1px solid #33415c; border-radius: 4px; padding: 0 4px; font-size: 12px; }
+
+  #editor { display: none; box-sizing: border-box; width: 100%; max-height: min(58vh, calc(100vh - 90px)); overflow: auto; background: rgba(13,17,26,.94); border: 1px solid #2b3d5e; border-radius: 12px; padding: 10px 12px; box-shadow: 0 8px 30px #0009; backdrop-filter: blur(6px); }
+  body.editing #editor { display: block; }
+  body.editing #rotpan { display: none; }
+  #editor .edhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; }
+  #editorStatus { font-size: 11px; opacity: .75; text-align: right; min-height: 14px; color: #9fe8ff; }
+  #editor .edrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  #editor label { display: flex; align-items: center; gap: 4px; font-size: 12px; opacity: .85; }
+  #editor select, #editor button { background: #1a2438; color: #dfe6f0; border: 1px solid #33415c; font-size: 12px; }
+  #editor select { max-width: 150px; padding: 0 8px; }
+  #editor button:hover { background: #26365a; }
+  #editor button.active { background: #2f4f86; border-color: #9fe8ff; box-shadow: 0 0 0 1px #9fe8ff55 inset; }
+  #editor .tools { gap: 6px; }
+  #editor .tools button { flex: 1 1 auto; white-space: nowrap; }
+  #editor .grow { flex: 1; }
+  #editor .hint { margin-top: 8px; font-size: 11px; line-height: 1.45; opacity: .68; }
+  @media (max-width: 600px) {
+    :root { --ctl-h: 44px; }
+    #topright { top: 8px; right: 8px; width: 44vw; max-width: 44vw; }
+    .topbar { flex-direction: column; }
+    .topbar select, .topbar button { flex: 1 1 auto; width: 100%; }
+    #editor { max-height: 46vh; }
+    #editor select { max-width: 110px; }
+    #hud { max-width: 50vw; }
+    body.editing #topright { width: calc(100vw - 16px); max-width: none; }
+    body.editing #hud { display: none; }
+  }
   .keys { margin-top: 8px; max-width: 560px; opacity: .8; }
   .legend { margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12px; opacity: .9; }
   .dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 4px; vertical-align: middle; border: 1px solid rgba(255,255,255,.25); }
-  #rotpan { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; flex-direction: column; gap: 6px; background: rgba(11,14,20,.72); padding: 8px 10px; border-radius: 10px; border: 1px solid #223; backdrop-filter: blur(4px); }
-  .rrow { display: flex; gap: 6px; align-items: center; }
-  .lbl { width: 62px; font-size: 12px; opacity: .75; }
-  #rotpan button { background: #1c2740; color: #dfe6f0; border: 1px solid #33415c; border-radius: 6px; padding: 4px 9px; font-size: 12px; cursor: pointer; }
-  #rotpan button:hover { background: #26365a; }
+  #rotpan { display: flex; flex-direction: column; gap: 8px; }
+  .rrow { display: grid; grid-template-columns: 62px repeat(6, minmax(0, 1fr)); gap: 8px; align-items: center; }
+  .lbl { font-size: 12px; opacity: .75; }
+  #rotpan button { width: 100%; padding: 0 4px; font-size: 12px; }
   #rotpan button.pending { background: #2f4f86; border-color: #9fe8ff; box-shadow: 0 0 8px #9fe8ff88; }
+  @media (max-width: 600px) {
+    #hud { max-width: 52vw; font-size: 12px; }
+    #hud .keys { display: none; }
+    #dock { left: 8px; right: 8px; bottom: 8px; transform: none; width: auto; }
+    #panel .actions kbd { display: none; }
+    .rrow { grid-template-columns: 48px repeat(6, minmax(0, 1fr)); gap: 5px; }
+    #rotpan button { font-size: 11px; padding: 0 2px; }
+  }
 </style>
 </head>
 <body>
@@ -49,20 +102,82 @@
     <kbd>[</kbd> <kbd>]</kbd> cambia livello · <kbd>R</kbd> ricarica · trascina per orbitare
   </div>
 </div>
-<div id="panel"><select id="level"></select></div>
-
-<div id="rotpan">
-  <div class="rrow"><span class="lbl">Facce</span>
-    <button data-kind="face" data-axis="x" data-verse="0">X−</button>
-    <button data-kind="face" data-axis="x" data-verse="1">X+</button>
-    <button data-kind="face" data-axis="y" data-verse="0">Y−</button>
-    <button data-kind="face" data-axis="y" data-verse="1">Y+</button>
-    <button data-kind="face" data-axis="z" data-verse="0">Z−</button>
-    <button data-kind="face" data-axis="z" data-verse="1">Z+</button>
+<div id="topright">
+  <div class="topbar">
+    <select id="level" aria-label="Livello"></select>
+    <button id="btnEditor" type="button" title="Apri il level editor">Editor livelli</button>
   </div>
-  <div class="rrow"><span class="lbl">Colonne</span>
-    <button data-kind="column" data-axis="y" data-verse="0">Y−</button>
-    <button data-kind="column" data-axis="y" data-verse="1">Y+</button>
+
+  <div id="editor" aria-label="Level editor">
+    <div class="edhead"><b>Level editor</b><span id="editorStatus"></span></div>
+    <div class="edrow">
+      <label>Cubo <select id="editorSize" aria-label="Dimensione cubo">
+        <option value="2">2×2×2</option><option value="3" selected>3×3×3</option><option value="4">4×4×4</option><option value="5">5×5×5</option>
+      </select></label>
+      <label>Gravità <select id="editorGravity" aria-label="Gravità">
+        <option value="down">giù</option><option value="up">su</option><option value="no">no</option>
+      </select></label>
+    </div>
+    <div class="edrow tools" id="editorTools">
+      <button data-tool="room" type="button">Stanza</button>
+      <button data-tool="symbol" type="button">Simbolo</button>
+      <button data-tool="trap" type="button">Trappola</button>
+      <button data-tool="key" type="button">Chiave</button>
+      <button data-tool="start" type="button">Partenza</button>
+      <button data-tool="exit" type="button">Uscita</button>
+      <button data-tool="erase" type="button">Gomma</button>
+    </div>
+    <div class="edrow">
+      <label>Faccia <select id="editorFaceDir" aria-label="Direzione faccia">
+        <option value="right">destra</option><option value="left">sinistra</option>
+        <option value="up">alto</option><option value="down">basso</option>
+        <option value="forward">avanti</option><option value="back">indietro</option>
+      </select></label>
+      <label>Simbolo <select id="editorSymbol" aria-label="Simbolo">
+        <option value="1">S1</option><option value="2">S2</option><option value="3">S3</option>
+        <option value="4">S4</option><option value="5">S5</option>
+      </select></label>
+    </div>
+    <div class="edrow">
+      <label>PG <select id="editorPg" aria-label="PG attivo"></select></label>
+      <label>Colore <select id="editorPgColor" aria-label="Colore PG">
+        <option value="red">rosso</option><option value="blue">blu</option>
+        <option value="pink">rosa</option><option value="orange">arancio</option>
+      </select></label>
+      <button id="editorAddPg" type="button" title="Aggiungi un PG">+</button>
+      <button id="editorDelPg" type="button" title="Rimuovi il PG attivo">−</button>
+    </div>
+    <div class="edrow">
+      <button id="editorTest" type="button">Prova</button>
+      <button id="editorExport" type="button">Esporta XML</button>
+      <button id="editorNew" type="button">Nuovo</button>
+      <button id="editorClose" type="button">Chiudi</button>
+    </div>
+    <div class="hint">Clicca le celle del cubo per applicare lo strumento scelto. “Stanza” crea/rimuove la cella; “Gomma” toglie la faccia nella direzione selezionata.</div>
+  </div>
+</div>
+
+<div id="dock">
+  <div id="panel">
+    <div class="actions">
+      <button id="btnSwitch" type="button" title="Cambia Cub1X attivo (Tab)" aria-label="Cambia Cub1X attivo">Cambia PG <kbd>Tab</kbd></button>
+      <button id="btnReset" type="button" title="Ricomincia il livello (R)" aria-label="Ricomincia il livello">Ricomincia <kbd>R</kbd></button>
+    </div>
+  </div>
+
+  <div id="rotpan">
+    <div class="rrow"><span class="lbl">Facce</span>
+      <button data-kind="face" data-axis="x" data-verse="0">X−</button>
+      <button data-kind="face" data-axis="x" data-verse="1">X+</button>
+      <button data-kind="face" data-axis="y" data-verse="0">Y−</button>
+      <button data-kind="face" data-axis="y" data-verse="1">Y+</button>
+      <button data-kind="face" data-axis="z" data-verse="0">Z−</button>
+      <button data-kind="face" data-axis="z" data-verse="1">Z+</button>
+    </div>
+    <div class="rrow"><span class="lbl">Colonne</span>
+      <button data-kind="column" data-axis="y" data-verse="0">Y−</button>
+      <button data-kind="column" data-axis="y" data-verse="1">Y+</button>
+    </div>
   </div>
 </div>
 
@@ -74,6 +189,6 @@
   }
 }
 </script>
-<script type="module" src="js/main.js?v=4"></script>
+<script type="module" src="js/main.js?v=7"></script>
 </body>
 </html>
